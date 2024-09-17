@@ -3,14 +3,14 @@ import { Router } from "express";
 
 const endpoints = Router();
 
-endpoints.post("/turma", async (req, resp) => {
+endpoints.post("/turma/", async (req, resp) => {
   try {
     let turmaObj = req.body;
 
     let id = await db.adicionarTurma(turmaObj);
 
     resp.send({
-      Novoid: id,
+      novoId: id,
     });
   } catch (err) {
     logErro(err);
@@ -81,10 +81,12 @@ endpoints.delete("/turma/:id", async (req, resp) => {
 
     await db.deletarTurma(id);
 
-    resp.status(404).send();
+    resp.status(200).send();
   } catch (err) {
     resp.status(400).send({
       erro: err.message,
     });
   }
 });
+
+export default endpoints;

@@ -1,119 +1,142 @@
 import con from "./connection.js";
 
+// Adiciona uma nova turma na base de dados
 export async function adicionarTurma(turma) {
-  let comando = `
-  insert into tb_turmas (nm_turma, ds_curso, nr_ano_letivo, qtd_capacidade, bt_ativo, dt_inclusao)
-  values (?, ?, ? , ? , ? , ?)
+  const comando = `
+    insert into tb_turma (nm_turma, ds_curso, nr_ano_letivo, qtd_capacidade, bt_ativo, dt_inclusao)
+    values (?, ?, ?, ?, ?, ?)
+  `
+
+  try {
+    const resposta = await con.query(comando, [turma.turma, turma.curso, turma.anoLetivo, turma.capacidade, turma.ativo, turma.inclusao]);
+    
+    let info = resposta[0];
+    const idTurma = info.insertId;
+    return idTurma;
+  } catch (error) {
+    console.error('Erro ao inserir turma:', error);
+    throw error;
+  }
+}
+
+// Consulta todas as turmas na base de dados
+export async function consultarTurmas() {
+  const comando = `
+  select 
+    nm_turma as turma,			
+    ds_curso as curso,			
+    nr_ano_letivo as anoLetivo,		
+    qtd_capacidade as capacidade,	
+    bt_ativo as ativo,			
+    dt_inclusao as inclusao
+  from tb_turma
   `;
-  let resposta = await con.query(
-    comando,
-    turma[
-      (turma.turma,
+
+  try {
+    const resposta = await con.query(comando);
+    const registros = resposta[0];
+    return registros;
+  } catch (error) {
+    console.error('Erro ao consultar turmas:', error);
+    throw error;
+  }
+}
+
+// Consulta as turmas de um ano específico
+export async function consultarTurmasAno(ano) {
+  const comando = `
+  select 
+    nm_turma as turma,			
+    ds_curso as curso,			
+    nr_ano_letivo as anoLetivo,		
+    qtd_capacidade as capacidade,	
+    bt_ativo as ativo,			
+    dt_inclusao as inclusao
+  from tb_turma
+  where nr_ano_letivo = ?
+  `;
+
+  try {
+    const resposta = await con.query(comando, [ano]);
+    const registros = resposta[0];
+    return registros;
+  } catch (error) {
+    console.error('Erro ao consultar turmas do ano:', error);
+    throw error;
+  }
+}
+
+// Consulta as turmas de um ano específico e curso
+export async function consultarTurmasAnoCurso(ano, curso) {
+  const comando = `
+  select 
+    nm_turma as turma,			
+    ds_curso as curso,			
+    nr_ano_letivo as anoLetivo,		
+    qtd_capacidade as capacidade,	
+    bt_ativo as ativo,			
+    dt_inclusao as inclusao
+  from tb_turma
+  where nr_ano_letivo = ? and ds_curso = ?
+  `;
+
+  try {
+    const resposta = await con.query(comando, [ano, curso]);
+    const registros = resposta[0];
+    return registros;
+  } catch (error) {
+    console.error('Erro ao consultar turmas do ano e curso:', error);
+    throw error;
+  }
+}
+
+// Altera uma turma existente
+export async function alterarTurma(id, turma) {
+  const comando = `
+    update tb_turma
+    set   
+      nm_turma = ?,	
+      ds_curso = ?,			
+      nr_ano_letivo = ?,
+      qtd_capacidade = ?,	
+      bt_ativo = ?,
+      dt_inclusao = ?
+    where id_turma = ?
+  `;
+
+  try {
+    const resposta = await con.query(comando, [
+      turma.turma,
       turma.curso,
       turma.anoLetivo,
       turma.capacidade,
       turma.ativo,
-      turma.inclusao)
-    ]
-  );
-  let info = resposta[0];
+      turma.inclusao,
+      id,
+    ]);
 
-  let idTurma = info.insertId;
-  return idTurma;
+    const info = resposta[0];
+    const linhasAfetadas = info.affectedRows;
+    return linhasAfetadas;
+  } catch (error) {
+    console.error('Erro ao alterar turma:', error);
+    throw error;
+  }
 }
 
-export async function consultarTurmas() {
-  let comando = `
-  select 
-    nm_turma   turma,			
-    ds_curso   curso,			
-    nr_ano_letivo   anoLetivo,		
-    qtd_capacidade   capacidade,	
-    bt_ativo         ativo,			
-    dt_inclusao      inclusao
-from tb_turmas
+// Deleta uma turma existente
+export async function deletarTurma(id) {
+  const comando = `
+    delete from tb_turma where id_turma = ?;
   `;
 
-  let resposta = await con.query(comando);
-  let registros = resposta[0];
-
-  return registros;
-}
-
-export async function consultarTurmasAno (ano){
-  let comando = `
-  select 
-  nm_turma   turma,			
-  ds_curso   curso,			
-  nr_ano_letivo   anoLetivo,		
-  qtd_capacidade   capacidade,	
-  bt_ativo         ativo,			
-  dt_inclusao      inclusao
-from tb_turmas
-where nr_ano_letivo = ?
-  `
-
-let resposta = await con.query(comando, [ano])
-let registro = resposta[0]
-
-return registro
-}
-
-
-export async function consultarTurmasAnoCurso (ano, curso) {
-  let comando = `
-  select 
-    nm_turma   turma,			
-    ds_curso   curso,			
-    nr_ano_letivo   anoLetivo,		
-    qtd_capacidade   capacidade,	
-    bt_ativo         ativo,			
-    dt_inclusao      inclusao
-from tb_turmas
-where nr_ano_letivo = ? and ds_curso = ?
-  `
-
-  let resposta = await con.query (comando, [ano, curso])
-  let registro = resposta[0]
-
-  return registro
-}
-
-export async function alterarTurma(id, turma) {
-  let comando = `        
-    update tb_turmas 
-    set   nm_turma	= ?,	
-      ds_curso = ?,			
-      nr_ano_letivo =?,
-      qtd_capacidade = ?	,	
-      bt_ativo	= ?,
-      dt_inclusao	 = ?
-    where id_turma = ?;
-  `
-
-  let resposta  = await con.query(comando, [
-    turma.turma,
-    turma.curso,
-    turma.anoLetivo,
-    turma.capacidade,
-    turma.ativo,
-    turma.inclusao,
-    id]);
-
-    let info = resposta[0];
-    let linhasAfetadas = info.affectedRows;
-
+  try {
+    const resposta = await con.query(comando, [id]);
+    const info = resposta[0];
+    const linhasAfetadas = info.affectedRows;
     return linhasAfetadas;
-}
-
-export async function deletarTurma(id) {
-  let comando = `
-    delete from tb_turmas where id_turma = ?;
-  `
-
-  let resposta = await con.query(comando, [id]);
-  let info = resposta[0]
-
-  let linhasAfetadas = info.affectedRows;
-  return linhasAfetadas;
+  } catch (error) {
+    console.error('Erro ao deletar turma:', error);
+    throw error;
+  }
 }
